@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/rootLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/black">
+
+    <!-- ========================================================= -->
+    <!-- Full screen image                                         -->
+    <!-- ========================================================= -->
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:src="@drawable/meterpic"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="fitCenter"
+        android:adjustViewBounds="true"
+        android:contentDescription="@null" />
+
+    <!-- ========================================================= -->
+    <!-- Draggable Text                                             -->
+    <!-- ========================================================= -->
+
+    <!-- ========================================================= -->
+    <!-- Bottom controls                                            -->
+    <!-- ========================================================= -->
+
+    <com.dug.sun.DraggableTextBoxNew
+        android:id="@+id/draggableTextBox"
+        android:layout_width="@dimen/_180sdp"
+        android:layout_height="@dimen/_100sdp"
+        android:layout_gravity="center" />
+
+    <LinearLayout
+        android:id="@+id/bottomControls"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/_80sdp"
+        android:layout_gravity="bottom"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:paddingStart="@dimen/_20sdp"
+        android:paddingEnd="@dimen/_20sdp"
+        android:paddingTop="@dimen/_10sdp"
+        android:paddingBottom="@dimen/_10sdp"
+        android:background="#CC000000">
+
+        <!-- Decrease -->
+
+        <Button
+            android:id="@+id/buttonDecrease"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="−"
+            android:textColor="@color/white"
+            android:background="@drawable/round_button"
+
+            android:textSize="@dimen/_28ssp"
+            android:textStyle="bold" />
+
+        <!-- Increase -->
+
+        <Button
+            android:id="@+id/buttonIncrease"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:layout_marginStart="@dimen/_12sdp"
+            android:text="+"
+            android:textColor="@color/white"
+            android:background="@drawable/round_button"
+            android:textSize="@dimen/_28ssp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+</FrameLayout>
