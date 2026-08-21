@@ -63,6 +63,19 @@
 
         </FrameLayout>
 
+        <!-- Text Blackness SeekBar -->
+        <SeekBar
+            android:id="@+id/seekTextBlackness"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/_8sdp"
+            android:layout_marginTop="@dimen/_8sdp"
+            android:max="255"
+            android:progress="128"
+            android:progressDrawable="@drawable/seekbar_black_track"
+            android:splitTrack="false"
+            android:thumb="@drawable/seekbar_black_thumb" />
+
         <!-- Contrast SeekBar -->
         <SeekBar
             android:id="@+id/seekContrast"
@@ -176,6 +189,8 @@
         android:layout_gravity="start"
         android:fitsSystemWindows="true"
         app:headerLayout="@layout/nav_header_main"
+        app:itemIconTint="@color/black"
+        app:itemTextColor="@color/black"
         app:menu="@menu/drawer_menu" />
 
 </androidx.drawerlayout.widget.DrawerLayout>

@@ -17,11 +17,13 @@
         android:src="@drawable/splash_icon" />
 
     <TextView
+        android:id="@+id/tvUsername"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingTop="@dimen/_4sdp"
-        android:text="Rahul Gupta"
+        android:text="User Name"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+        android:textColor="@color/white"
         android:textSize="@dimen/_14ssp"
         android:textStyle="bold" />
 
@@ -29,6 +31,7 @@
         android:id="@+id/tvPlanStart"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:textColor="@color/white"
         android:textSize="@dimen/_12ssp"
         android:text="Plan Start: Aug 12, 2026" />
 
@@ -36,6 +39,7 @@
         android:id="@+id/tvPlanEnd"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:textColor="@color/white"
         android:textSize="@dimen/_12ssp"
         android:text="Plan End: Sep 12, 2026" />
 

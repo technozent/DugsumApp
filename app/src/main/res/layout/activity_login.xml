@@ -4,12 +4,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@android:color/white"
-    android:gravity="center"
+    android:gravity="center_horizontal"
     android:orientation="vertical"
     android:padding="@dimen/_24sdp">
 
     <ImageView
         android:id="@+id/ivLogo"
+        android:layout_marginTop="@dimen/_90sdp"
         android:layout_width="@dimen/_100sdp"
         android:layout_height="@dimen/_100sdp"
         android:src="@drawable/dugsun_logo"
@@ -43,34 +44,34 @@
         android:background="@drawable/rounded_corner_bg"
         android:hint="Mobile Number"
         android:inputType="phone"
+        android:maxLength="10"
         android:paddingHorizontal="@dimen/_16sdp"
         android:textColor="@android:color/black"
         android:textColorHint="#999999"
         android:textSize="@dimen/_14ssp" />
 
-    <EditText
-        android:id="@+id/etPassword"
+    <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
-        android:layout_height="@dimen/_45sdp"
-        android:layout_marginTop="@dimen/_12sdp"
-        android:background="@drawable/rounded_corner_bg"
-        android:hint="Password"
-        android:inputType="textPassword"
-        android:paddingHorizontal="@dimen/_16sdp"
-        android:textColor="@android:color/black"
-        android:textColorHint="#999999"
-        android:textSize="@dimen/_14ssp" />
-
-    <TextView
-        android:id="@+id/tvForgotPassword"
-        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="end"
-        android:layout_marginTop="@dimen/_8sdp"
-        android:text="Forgot Password?"
-        android:textColor="@color/primary"
-        android:textSize="@dimen/_11ssp"
-        android:textStyle="bold" />
+        android:layout_marginTop="@dimen/_12sdp"
+        app:hintEnabled="false"
+        app:endIconMode="password_toggle"
+        app:endIconTint="@color/primary"
+        app:boxBackgroundMode="none">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etPassword"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/_45sdp"
+            android:background="@drawable/rounded_corner_bg"
+            android:hint="Password"
+            android:inputType="textPassword"
+            android:paddingHorizontal="@dimen/_16sdp"
+            android:textColor="@android:color/black"
+            android:textColorHint="#999999"
+            android:textSize="@dimen/_14ssp" />
+
+    </com.google.android.material.textfield.TextInputLayout>
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/btnLogin"
@@ -83,28 +84,5 @@
         android:textColor="@android:color/white"
         android:textSize="@dimen/_16ssp"
         android:textStyle="bold" />
-
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/_32sdp"
-        android:orientation="horizontal">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Don't have an account? "
-            android:textColor="#666666"
-            android:textSize="@dimen/_12ssp" />
-
-        <TextView
-            android:id="@+id/tvRegister"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Register Now"
-            android:textColor="@color/primary"
-            android:textSize="@dimen/_12ssp"
-            android:textStyle="bold" />
-    </LinearLayout>
 
 </LinearLayout>

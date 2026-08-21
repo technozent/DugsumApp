@@ -25,10 +25,15 @@ class DraggableTextBox @JvmOverloads constructor(
         strokeWidth = 4f // 2px equivalent roughly, or set exactly
     }
     private val handlePaint = Paint().apply {
+        color = Color.WHITE
+        style = Paint.Style.FILL
+        textSize = resources.getDimension(com.intuit.ssp.R.dimen._24ssp)
+        textAlign = Paint.Align.CENTER
+        isFakeBoldText = true
+    }
+    private val handleBgPaint = Paint().apply {
         color = Color.parseColor("#471A72")
         style = Paint.Style.FILL
-        textSize = resources.getDimension(com.intuit.ssp.R.dimen._12ssp)
-        textAlign = Paint.Align.CENTER
     }
 
     private var downRawX = 0f
@@ -41,18 +46,22 @@ class DraggableTextBox @JvmOverloads constructor(
     private var isTouched = false
 
     private val minSize = resources.getDimensionPixelSize(com.intuit.sdp.R.dimen._30sdp)
-    private val resizeArea = resources.getDimensionPixelSize(com.intuit.sdp.R.dimen._20sdp)
+    private val resizeArea = resources.getDimensionPixelSize(com.intuit.sdp.R.dimen._25sdp)
 
     init {
         setWillNotDraw(false)
         setBackgroundColor(Color.TRANSPARENT)
+        
+        // Add padding to ensure the textView stays within the border and 
+        // doesn't overlap with the "outside" handle
+        val radius = handlePaint.textSize * 0.6f
         val padding = resources.getDimensionPixelSize(com.intuit.sdp.R.dimen._2sdp)
-        setPadding(padding, padding, padding, padding)
+        setPadding(padding, padding, (padding + radius).toInt(), (padding + radius).toInt())
 
         textView = TextView(context).apply {
-            setTextColor(Color.parseColor("#505050"))
+            setTextColor(Color.parseColor("#757575"))
             textSize = resources.getDimension(com.intuit.ssp.R.dimen._22ssp)
-            gravity = Gravity.CENTER
+            gravity = Gravity.START or Gravity.CENTER_VERTICAL
             includeFontPadding = false
             letterSpacing = 0.25f
             isClickable = false
@@ -75,12 +84,19 @@ class DraggableTextBox @JvmOverloads constructor(
         updateTextSize()
     }
 
+    fun setTextBlackness(intensity: Float) {
+        // intensity 0.0 (lightest) to 1.0 (darkest)
+        // Map to RGB values 200 (light grey) down to 0 (black)
+        val grey = (200 * (1f - intensity)).toInt()
+        textView.setTextColor(Color.rgb(grey, grey, grey))
+    }
+
     private fun updateTextSize() {
         if (width <= 0 || height <= 0) return
         val availableWidth = width - paddingLeft - paddingRight
         val availableHeight = height - paddingTop - paddingBottom
         if (availableWidth <= 0 || availableHeight <= 0) return
-        val size = min(availableWidth, availableHeight) * 0.6f
+        val size = min(availableWidth, availableHeight) * 0.3f
         textView.textSize = size.coerceIn(8f, 35f)
     }
 
@@ -152,8 +168,18 @@ class DraggableTextBox @JvmOverloads constructor(
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         if (isTouched) {
-            canvas.drawRect(0f, 0f, width.toFloat(), height.toFloat(), borderPaint)
-            canvas.drawText("+", width.toFloat() - 25f, height.toFloat() - 10f, handlePaint)
+            val radius = handlePaint.textSize * 0.6f
+            val rectRight = width.toFloat() - radius
+            val rectBottom = height.toFloat() - radius
+
+            // Draw border rectangle slightly inset to allow handle "outside"
+            canvas.drawRect(0f, 0f, rectRight, rectBottom, borderPaint)
+
+            // Draw handle background circle at bottom-right
+            canvas.drawCircle(rectRight, rectBottom, radius, handleBgPaint)
+
+            // Draw "+" text inside circle
+            canvas.drawText("+", rectRight, rectBottom + (handlePaint.textSize / 3f), handlePaint)
         }
     }
 

@@ -62,4 +62,10 @@ dependencies {
     implementation(libs.ssp.android)
 
     implementation("com.google.android.material:material:1.12.0")
+
+    // Networking
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.gson)
+    implementation(libs.okhttp)
+    implementation(libs.okhttp.logging)
 }

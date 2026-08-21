@@ -1,6 +1,7 @@
 package com.dug.sun
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.graphics.Color
 import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
@@ -8,6 +9,8 @@ import android.graphics.Matrix
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.view.MotionEvent
+import android.view.ScaleGestureDetector
 import android.view.View
 import android.view.WindowInsetsController
 import android.widget.Button
@@ -15,7 +18,10 @@ import android.widget.EditText
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.SeekBar
+import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat
@@ -23,7 +29,11 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.lifecycle.lifecycleScope
+import com.dug.sun.api.RetrofitClient
+import com.dug.sun.api.getErrorMessage
 import com.google.android.material.navigation.NavigationView
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
@@ -31,13 +41,20 @@ class MainActivity : AppCompatActivity() {
     private lateinit var overlayContainer: FrameLayout
     private lateinit var etText: EditText
     private lateinit var drawerLayout: DrawerLayout
+    private lateinit var scaleGestureDetector: ScaleGestureDetector
     private var draggableTextBox: DraggableTextBox? = null
+
+    private lateinit var tvUsername: TextView
+    private lateinit var tvPlanStart: TextView
+    private lateinit var tvPlanEnd: TextView
 
     enum class FilterPreset { NONE, WARM, COOL, VINTAGE }
     private var currentPreset = FilterPreset.NONE
     private var contrastValue = 1f
     private var scaleFactor = 1f
     private var initialScale = 1f
+    private var lastTouchX = 0f
+    private var lastTouchY = 0f
 
     private val imageMatrix = Matrix()
 
@@ -48,8 +65,11 @@ class MainActivity : AppCompatActivity() {
         window.setBackgroundDrawableResource(android.R.color.white)
         setContentView(R.layout.activity_main)
 
+        RetrofitClient.init(SessionManager(this))
+
         setupStatusBar()
         setupToolbarAndDrawer()
+      //  fetchPlanStatus()
 
         val statusBarSpacer = findViewById<View>(R.id.statusBarSpacer)
         val rootLayout = findViewById<View>(R.id.rootLayout)
@@ -67,6 +87,8 @@ class MainActivity : AppCompatActivity() {
         ivImage = findViewById(R.id.ivImage)
         overlayContainer = findViewById(R.id.overlayContainer)
         etText = findViewById(R.id.etText)
+
+        setupPinchToZoom()
 
         ivImage.post { centerImage() }
 
@@ -87,6 +109,14 @@ class MainActivity : AppCompatActivity() {
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
         })
 
+        findViewById<SeekBar>(R.id.seekTextBlackness).setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                draggableTextBox?.setTextBlackness(progress / 255f)
+            }
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
+
         findViewById<Button>(R.id.btnWarm).setOnClickListener { currentPreset = FilterPreset.WARM; applyColorFilter() }
         findViewById<Button>(R.id.btnCool).setOnClickListener { currentPreset = FilterPreset.COOL; applyColorFilter() }
         findViewById<Button>(R.id.btnHighContrast).setOnClickListener { contrastValue = 1.8f; applyColorFilter() }
@@ -94,6 +124,92 @@ class MainActivity : AppCompatActivity() {
 
         findViewById<Button>(R.id.btnZoomIn).setOnClickListener { zoom(1.2f) }
         findViewById<Button>(R.id.btnZoomOut).setOnClickListener { zoom(0.8f) }
+    }
+
+    private fun fetchPlanStatus() {
+        val sessionManager = SessionManager(this)
+        
+        // Initial load from session
+        tvUsername.text = sessionManager.getUsername() ?: "User"
+        tvPlanStart.text = "Plan Start: ${sessionManager.getPlanStart() ?: ""}"
+        tvPlanEnd.text = "Plan End: ${sessionManager.getPlanEnd() ?: ""}"
+
+        lifecycleScope.launch {
+            try {
+                val response = RetrofitClient.apiService.getPlanStatus()
+                if (response.isSuccessful) {
+                    response.body()?.let { plan ->
+                        // Update UI
+                        tvUsername.text = plan.username ?: "User"
+                        tvPlanStart.text = "Plan Start: ${plan.planStartDate ?: ""}"
+                        tvPlanEnd.text = "Plan End: ${plan.planEndDate ?: ""}"
+
+                        // Sync with session
+                        sessionManager.saveUserDetails(plan.username, plan.planStartDate, plan.planEndDate)
+
+                        if (plan.isExpired) {
+                            showExpirationDialog()
+                        }
+                    }
+                } else {
+                    val message = response.getErrorMessage()
+                    showErrorDialog(message)
+                }
+            } catch (e: Exception) {
+                showErrorDialog("Network error: ${e.message}")
+            }
+        }
+    }
+
+    private fun showErrorDialog(message: String) {
+        AlertDialog.Builder(this)
+            .setTitle("Application Error")
+            .setMessage(message)
+            .setCancelable(false)
+            .setPositiveButton("Exit") { _, _ ->
+                finishAffinity()
+            }
+            .show()
+    }
+
+    private fun showExpirationDialog() {
+        AlertDialog.Builder(this)
+            .setTitle("Plan Expired")
+            .setMessage("Your plan has expired. Please renew to continue using the app.")
+            .setCancelable(false)
+            .setPositiveButton("Exit") { _, _ ->
+                finishAffinity()
+            }
+            .show()
+    }
+
+    private fun showLogoutConfirmation() {
+        AlertDialog.Builder(this)
+            .setTitle("Logout")
+            .setMessage("Are you sure you want to logout?")
+            .setPositiveButton("Yes") { _, _ ->
+                performLogout()
+            }
+            .setNegativeButton("No", null)
+            .show()
+    }
+
+    private fun performLogout() {
+        lifecycleScope.launch {
+            try {
+                val response = RetrofitClient.apiService.logout()
+                if (response.isSuccessful) {
+                    SessionManager(this@MainActivity).clearSession()
+                    startActivity(Intent(this@MainActivity, LoginActivity::class.java))
+                    finish()
+                } else {
+                    val message = response.getErrorMessage()
+                    Toast.makeText(this@MainActivity, "Logout failed: $message", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(this@MainActivity, "Logout failed: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     private fun setupStatusBar() {
@@ -122,9 +238,14 @@ class MainActivity : AppCompatActivity() {
         toggle.syncState()
 
         val navigationView: NavigationView = findViewById(R.id.nav_view)
+        val headerView = navigationView.getHeaderView(0)
+        tvUsername = headerView.findViewById(R.id.tvUsername)
+        tvPlanStart = headerView.findViewById(R.id.tvPlanStart)
+        tvPlanEnd = headerView.findViewById(R.id.tvPlanEnd)
+
         navigationView.setNavigationItemSelectedListener { item ->
             if (item.itemId == R.id.nav_logout) {
-                finish()
+                showLogoutConfirmation()
             }
             drawerLayout.closeDrawer(GravityCompat.START)
             true
@@ -140,6 +261,55 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         })
+    }
+
+    private fun setupPinchToZoom() {
+        scaleGestureDetector = ScaleGestureDetector(this, object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
+            override fun onScale(detector: ScaleGestureDetector): Boolean {
+                val factor = detector.scaleFactor
+                zoomAt(factor, detector.focusX, detector.focusY)
+                return true
+            }
+        })
+
+        overlayContainer.setOnTouchListener { v, event ->
+            scaleGestureDetector.onTouchEvent(event)
+
+            val action = event.actionMasked
+            when (action) {
+                MotionEvent.ACTION_DOWN -> {
+                    lastTouchX = event.x
+                    lastTouchY = event.y
+                }
+                MotionEvent.ACTION_MOVE -> {
+                    // Only pan if we are not scaling and have exactly one finger
+                    if (!scaleGestureDetector.isInProgress && event.pointerCount == 1) {
+                        val dx = event.x - lastTouchX
+                        val dy = event.y - lastTouchY
+                        imageMatrix.postTranslate(dx, dy)
+                        ivImage.imageMatrix = imageMatrix
+                    }
+
+                    // Always update last touch position when moving with one finger
+                    // to keep the next delta accurate.
+                    if (event.pointerCount == 1) {
+                        lastTouchX = event.x
+                        lastTouchY = event.y
+                    }
+                }
+                MotionEvent.ACTION_POINTER_UP -> {
+                    // When one finger is lifted, update lastTouchX/Y to the remaining finger's position
+                    // to prevent jumping if panning resumes with the remaining finger.
+                    val index = if (event.actionIndex == 0) 1 else 0
+                    lastTouchX = event.getX(index)
+                    lastTouchY = event.getY(index)
+                }
+                MotionEvent.ACTION_UP -> {
+                    v.performClick()
+                }
+            }
+            true
+        }
     }
 
     private fun centerImage() {
@@ -165,26 +335,27 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun zoom(factor: Float) {
+        zoomAt(factor, ivImage.width / 2f, ivImage.height / 2f)
+    }
+
+    private fun zoomAt(factor: Float, focusX: Float, focusY: Float) {
         val nextScale = scaleFactor * factor
         val relativeScale = nextScale / initialScale
         if (relativeScale < 0.5f || relativeScale > 4.0f) return
 
         scaleFactor = nextScale
-        imageMatrix.postScale(factor, factor, ivImage.width / 2f, ivImage.height / 2f)
+        imageMatrix.postScale(factor, factor, focusX, focusY)
         ivImage.imageMatrix = imageMatrix
     }
 
     private fun handleTextSync(text: String) {
         if (text.isEmpty()) {
-            draggableTextBox?.let {
-                overlayContainer.removeView(it)
-                draggableTextBox = null
-            }
+            draggableTextBox?.visibility = View.GONE
         } else {
             if (draggableTextBox == null) {
                 draggableTextBox = DraggableTextBox(this).apply {
-                    val widthPx = resources.getDimensionPixelSize(com.intuit.sdp.R.dimen._56sdp)
-                    val heightPx = resources.getDimensionPixelSize(com.intuit.sdp.R.dimen._26sdp)
+                    val widthPx = resources.getDimensionPixelSize(com.intuit.sdp.R.dimen._150sdp)
+                    val heightPx = resources.getDimensionPixelSize(com.intuit.sdp.R.dimen._45sdp)
                     val lp = FrameLayout.LayoutParams(widthPx, heightPx)
                     lp.leftMargin = (overlayContainer.width - widthPx) / 2
                     lp.topMargin = (overlayContainer.height - heightPx) / 2
@@ -192,7 +363,12 @@ class MainActivity : AppCompatActivity() {
                 }
                 overlayContainer.addView(draggableTextBox)
             }
+            draggableTextBox?.visibility = View.VISIBLE
             draggableTextBox?.setText(text)
+            
+            // Sync current blackness
+            val blacknessProgress = findViewById<SeekBar>(R.id.seekTextBlackness).progress
+            draggableTextBox?.setTextBlackness(blacknessProgress / 255f)
         }
     }
 
