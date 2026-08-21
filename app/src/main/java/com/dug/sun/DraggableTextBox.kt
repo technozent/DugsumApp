@@ -43,7 +43,12 @@ class DraggableTextBox @JvmOverloads constructor(
     private var startWidth = 0
     private var startHeight = 0
     private var isResizing = false
-    private var isTouched = false
+    
+    var isHandleVisible = false
+        set(value) {
+            field = value
+            invalidate()
+        }
 
     private val minSize = resources.getDimensionPixelSize(com.intuit.sdp.R.dimen._30sdp)
     private val resizeArea = resources.getDimensionPixelSize(com.intuit.sdp.R.dimen._25sdp)
@@ -113,8 +118,7 @@ class DraggableTextBox @JvmOverloads constructor(
         when (ev.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
                 isResizing = isResizeArea(ev.x, ev.y)
-                isTouched = true
-                invalidate()
+                isHandleVisible = true
                 if (isResizing) return true
             }
         }
@@ -130,8 +134,7 @@ class DraggableTextBox @JvmOverloads constructor(
                 startTranslationY = translationY
                 startWidth = width
                 startHeight = height
-                isTouched = true
-                invalidate()
+                isHandleVisible = true
                 return true
             }
             MotionEvent.ACTION_MOVE -> {
@@ -156,8 +159,6 @@ class DraggableTextBox @JvmOverloads constructor(
             }
             MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                 isResizing = false
-                isTouched = false
-                invalidate()
                 performClick()
                 return true
             }
@@ -167,7 +168,7 @@ class DraggableTextBox @JvmOverloads constructor(
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        if (isTouched) {
+        if (isHandleVisible) {
             val radius = handlePaint.textSize * 0.6f
             val rectRight = width.toFloat() - radius
             val rectBottom = height.toFloat() - radius

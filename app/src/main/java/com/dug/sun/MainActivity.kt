@@ -278,6 +278,8 @@ class MainActivity : AppCompatActivity() {
             val action = event.actionMasked
             when (action) {
                 MotionEvent.ACTION_DOWN -> {
+                    // Touch is outside DraggableTextBox
+                    draggableTextBox?.isHandleVisible = false
                     lastTouchX = event.x
                     lastTouchY = event.y
                 }
@@ -364,6 +366,7 @@ class MainActivity : AppCompatActivity() {
                 overlayContainer.addView(draggableTextBox)
             }
             draggableTextBox?.visibility = View.VISIBLE
+            draggableTextBox?.isHandleVisible = true
             draggableTextBox?.setText(text)
             
             // Sync current blackness
