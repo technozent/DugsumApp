@@ -1,88 +1,94 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@android:color/white"
-    android:gravity="center_horizontal"
-    android:orientation="vertical"
-    android:padding="@dimen/_24sdp">
+    android:fillViewport="true">
 
-    <ImageView
-        android:id="@+id/ivLogo"
-        android:layout_marginTop="@dimen/_90sdp"
-        android:layout_width="@dimen/_100sdp"
-        android:layout_height="@dimen/_100sdp"
-        android:src="@drawable/dugsun_logo"
-        android:contentDescription="@string/app_name" />
-
-    <TextView
-        android:id="@+id/tvLoginTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/_12sdp"
-        android:text="Login"
-        android:textColor="@color/primary"
-        android:textSize="@dimen/_24ssp"
-        android:textStyle="bold" />
-
-    <TextView
-        android:id="@+id/tvWelcome"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/_4sdp"
-        android:text="Welcome back! Please enter your details."
-        android:textColor="#666666"
-        android:textSize="@dimen/_12ssp"
-        android:gravity="center" />
-
-    <EditText
-        android:id="@+id/etMobile"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/_45sdp"
-        android:layout_marginTop="@dimen/_24sdp"
-        android:background="@drawable/rounded_corner_bg"
-        android:hint="Mobile Number"
-        android:inputType="phone"
-        android:maxLength="10"
-        android:paddingHorizontal="@dimen/_16sdp"
-        android:textColor="@android:color/black"
-        android:textColorHint="#999999"
-        android:textSize="@dimen/_14ssp" />
-
-    <com.google.android.material.textfield.TextInputLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/_12sdp"
-        app:hintEnabled="false"
-        app:endIconMode="password_toggle"
-        app:endIconTint="@color/primary"
-        app:boxBackgroundMode="none">
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:padding="@dimen/_24sdp">
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/etPassword"
+        <ImageView
+            android:id="@+id/ivLogo"
+            android:layout_width="@dimen/_100sdp"
+            android:layout_height="@dimen/_100sdp"
+            android:layout_marginTop="@dimen/_90sdp"
+            android:contentDescription="@string/app_name"
+            android:src="@drawable/dugsun_logo" />
+
+        <TextView
+            android:id="@+id/tvLoginTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/_12sdp"
+            android:text="Login"
+            android:textColor="@color/primary"
+            android:textSize="@dimen/_24ssp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvWelcome"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/_4sdp"
+            android:gravity="center"
+            android:text="Welcome back! Please enter your details."
+            android:textColor="#666666"
+            android:textSize="@dimen/_12ssp" />
+
+        <EditText
+            android:id="@+id/etMobile"
             android:layout_width="match_parent"
             android:layout_height="@dimen/_45sdp"
+            android:layout_marginTop="@dimen/_24sdp"
             android:background="@drawable/rounded_corner_bg"
-            android:hint="Password"
-            android:inputType="textPassword"
+            android:hint="Mobile Number"
+            android:inputType="phone"
+            android:maxLength="10"
             android:paddingHorizontal="@dimen/_16sdp"
             android:textColor="@android:color/black"
             android:textColorHint="#999999"
             android:textSize="@dimen/_14ssp" />
 
-    </com.google.android.material.textfield.TextInputLayout>
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/_12sdp"
+            app:boxBackgroundMode="none"
+            app:endIconMode="password_toggle"
+            app:endIconTint="@color/primary"
+            app:hintEnabled="false">
 
-    <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/btnLogin"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/_45sdp"
-        android:layout_marginTop="@dimen/_20sdp"
-        android:background="@drawable/round_button"
-        android:text="Login"
-        android:textAllCaps="false"
-        android:textColor="@android:color/white"
-        android:textSize="@dimen/_16ssp"
-        android:textStyle="bold" />
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etPassword"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/_45sdp"
+                android:background="@drawable/rounded_corner_bg"
+                android:hint="Password"
+                android:inputType="textPassword"
+                android:paddingHorizontal="@dimen/_16sdp"
+                android:textColor="@android:color/black"
+                android:textColorHint="#999999"
+                android:textSize="@dimen/_14ssp" />
 
-</LinearLayout>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnLogin"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/_45sdp"
+            android:layout_marginTop="@dimen/_20sdp"
+            android:background="@drawable/round_button"
+            android:text="Login"
+            android:textAllCaps="false"
+            android:textColor="@android:color/white"
+            android:textSize="@dimen/_16ssp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+</ScrollView>

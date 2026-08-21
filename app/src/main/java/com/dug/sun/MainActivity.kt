@@ -69,7 +69,7 @@ class MainActivity : AppCompatActivity() {
 
         setupStatusBar()
         setupToolbarAndDrawer()
-      //  fetchPlanStatus()
+       fetchPlanStatus()
 
         val statusBarSpacer = findViewById<View>(R.id.statusBarSpacer)
         val rootLayout = findViewById<View>(R.id.rootLayout)
