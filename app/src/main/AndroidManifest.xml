@@ -29,13 +29,18 @@
             android:name=".LoginActivity"
             android:exported="false"
             android:label="@string/app_name"
-            android:windowSoftInputMode="adjustResize">
+            android:windowSoftInputMode="adjustPan">
         </activity>
         <activity
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"
             android:windowSoftInputMode="adjustResize">
+        </activity>
+        <activity
+            android:name=".SelectMeterActivity"
+            android:exported="false"
+            android:label="Select Meter">
         </activity>
 
 

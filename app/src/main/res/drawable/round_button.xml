@@ -5,7 +5,7 @@
         android:bottomRightRadius="@dimen/_10sdp"
         android:topLeftRadius="@dimen/_10sdp"
         android:topRightRadius="@dimen/_10sdp" />
-    <solid android:color="#471A72" />
+    <solid android:color="#0080d0" />
     <padding
         android:bottom="@dimen/_8sdp"
         android:left="@dimen/_16sdp"

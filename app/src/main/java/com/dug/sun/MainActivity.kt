@@ -20,6 +20,7 @@ import android.widget.ImageView
 import android.widget.SeekBar
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -47,6 +48,16 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvUsername: TextView
     private lateinit var tvPlanStart: TextView
     private lateinit var tvPlanEnd: TextView
+
+    private val selectMeterLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == RESULT_OK) {
+            val resId = result.data?.getIntExtra("selected_meter_res_id", 0) ?: 0
+            if (resId != 0) {
+                ivImage.setImageResource(resId)
+                ivImage.post { centerImage() }
+            }
+        }
+    }
 
     enum class FilterPreset { NONE, WARM, COOL, VINTAGE }
     private var currentPreset = FilterPreset.NONE
@@ -244,8 +255,13 @@ class MainActivity : AppCompatActivity() {
         tvPlanEnd = headerView.findViewById(R.id.tvPlanEnd)
 
         navigationView.setNavigationItemSelectedListener { item ->
-            if (item.itemId == R.id.nav_logout) {
-                showLogoutConfirmation()
+            when (item.itemId) {
+                R.id.nav_select_meter -> {
+                    selectMeterLauncher.launch(Intent(this, SelectMeterActivity::class.java))
+                }
+                R.id.nav_logout -> {
+                    showLogoutConfirmation()
+                }
             }
             drawerLayout.closeDrawer(GravityCompat.START)
             true

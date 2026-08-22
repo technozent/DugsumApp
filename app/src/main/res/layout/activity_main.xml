@@ -17,13 +17,13 @@
             android:id="@+id/statusBarSpacer"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:background="#471A72" />
+            android:background="@color/primary" />
 
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="#471A72"
+            android:background="@color/primary"
             app:popupTheme="@style/ThemeOverlay.AppCompat.Light">
 
             <EditText
@@ -54,7 +54,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="matrix"
-                android:src="@drawable/meterpic" />
+                android:src="@drawable/m19" />
 
             <FrameLayout
                 android:id="@+id/overlayContainer"

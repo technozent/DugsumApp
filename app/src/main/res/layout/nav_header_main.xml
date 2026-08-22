@@ -14,7 +14,7 @@
         android:layout_height="@dimen/_64sdp"
         android:contentDescription="Profile Icon"
         android:paddingTop="@dimen/_8sdp"
-        android:src="@drawable/splash_icon" />
+        android:src="@drawable/ic_person_placeholder" />
 
     <TextView
         android:id="@+id/tvUsername"
