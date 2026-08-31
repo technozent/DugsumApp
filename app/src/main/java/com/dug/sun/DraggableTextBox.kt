@@ -11,7 +11,6 @@ import android.view.MotionEvent
 import android.view.View
 import android.widget.FrameLayout
 import android.widget.TextView
-import kotlin.math.min
 
 class DraggableTextBox @JvmOverloads constructor(
     context: Context,
@@ -22,7 +21,7 @@ class DraggableTextBox @JvmOverloads constructor(
     private val borderPaint = Paint().apply {
         color = Color.parseColor("#471A72")
         style = Paint.Style.STROKE
-        strokeWidth = 4f // 2px equivalent roughly, or set exactly
+        strokeWidth = 2.4f // Reduced by 40% from 4f
     }
     private val handlePaint = Paint().apply {
         color = Color.WHITE
@@ -35,6 +34,10 @@ class DraggableTextBox @JvmOverloads constructor(
         color = Color.parseColor("#471A72")
         style = Paint.Style.FILL
     }
+    private val rotateBgPaint = Paint().apply {
+        color = Color.parseColor("#0080d0")
+        style = Paint.Style.FILL
+    }
 
     private var downRawX = 0f
     private var downRawY = 0f
@@ -42,7 +45,10 @@ class DraggableTextBox @JvmOverloads constructor(
     private var startTranslationY = 0f
     private var startWidth = 0
     private var startHeight = 0
+    private var initialRotation = 0f
+    private var startAngle = 0f
     private var isResizing = false
+    private var isRotating = false
     
     var isHandleVisible = false
         set(value) {
@@ -51,33 +57,35 @@ class DraggableTextBox @JvmOverloads constructor(
         }
 
     private val minSize = resources.getDimensionPixelSize(com.intuit.sdp.R.dimen._30sdp)
-    private val resizeArea = resources.getDimensionPixelSize(com.intuit.sdp.R.dimen._25sdp)
+    private val handleArea = resources.getDimensionPixelSize(com.intuit.sdp.R.dimen._25sdp)
 
     init {
         setWillNotDraw(false)
         setBackgroundColor(Color.TRANSPARENT)
         
         // Add padding to ensure the textView stays within the border and 
-        // doesn't overlap with the "outside" handle
+        // doesn't overlap with the "outside" handles
         val radius = handlePaint.textSize * 0.6f
         val padding = resources.getDimensionPixelSize(com.intuit.sdp.R.dimen._2sdp)
-        setPadding(padding, padding, (padding + radius).toInt(), (padding + radius).toInt())
+        setPadding(padding, (padding + radius).toInt(), (padding + radius).toInt(), (padding + radius).toInt())
 
         textView = TextView(context).apply {
-            setTextColor(Color.parseColor("#757575"))
+            setTextColor(Color.parseColor("#9E9E9E"))
             textSize = resources.getDimension(com.intuit.ssp.R.dimen._22ssp)
             gravity = Gravity.START or Gravity.CENTER_VERTICAL
             includeFontPadding = false
-            letterSpacing = 0.25f
+            letterSpacing = 0.06f
             isClickable = false
             isFocusable = false
             isFocusableInTouchMode = false
 
-            typeface = try {
-                Typeface.createFromAsset(context.assets, "fonts/digital-7.ttf")
+            val baseTypeface = try {
+                Typeface.createFromAsset(context.assets, "fonts/ds_digital.ttf")
             } catch (e: Exception) {
-                Typeface.create(Typeface.MONOSPACE, Typeface.BOLD)
+                Typeface.create(Typeface.MONOSPACE, Typeface.NORMAL)
             }
+            typeface = baseTypeface
+            // Removed extra creation logic to keep it as regular as possible
 
             layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
         }
@@ -101,8 +109,11 @@ class DraggableTextBox @JvmOverloads constructor(
         val availableWidth = width - paddingLeft - paddingRight
         val availableHeight = height - paddingTop - paddingBottom
         if (availableWidth <= 0 || availableHeight <= 0) return
-        val size = min(availableWidth, availableHeight) * 0.3f
-        textView.textSize = size.coerceIn(8f, 35f)
+        
+        // Use height as the primary scaling factor for meter-like digits
+        val size = availableHeight * 0.73f
+        textView.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, size)
+        textView.textScaleX = 0.8f // 1.0 = normal, lower = narrower
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
@@ -111,15 +122,20 @@ class DraggableTextBox @JvmOverloads constructor(
     }
 
     private fun isResizeArea(x: Float, y: Float): Boolean {
-        return x >= width - resizeArea && y >= height - resizeArea
+        return x >= width - handleArea && y >= height - handleArea
+    }
+
+    private fun isRotationArea(x: Float, y: Float): Boolean {
+        return x >= width - handleArea && y <= handleArea
     }
 
     override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
         when (ev.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
                 isResizing = isResizeArea(ev.x, ev.y)
+                isRotating = isRotationArea(ev.x, ev.y)
                 isHandleVisible = true
-                if (isResizing) return true
+                if (isResizing || isRotating) return true
             }
         }
         return super.onInterceptTouchEvent(ev)
@@ -134,21 +150,31 @@ class DraggableTextBox @JvmOverloads constructor(
                 startTranslationY = translationY
                 startWidth = width
                 startHeight = height
+                
+                initialRotation = rotation
+                startAngle = calculateAngle(event.rawX, event.rawY)
+                
                 isHandleVisible = true
                 return true
             }
             MotionEvent.ACTION_MOVE -> {
-                val dx = event.rawX - downRawX
-                val dy = event.rawY - downRawY
-
-                if (isResizing) {
+                if (isRotating) {
+                    val currentAngle = calculateAngle(event.rawX, event.rawY)
+                    rotation = (initialRotation + (currentAngle - startAngle)).coerceIn(-30f, 30f)
+                } else if (isResizing) {
+                    val dx = event.rawX - downRawX
+                    val dy = event.rawY - downRawY
+                    
                     val newWidth = (startWidth + dx).toInt().coerceAtLeast(minSize)
                     val newHeight = (startHeight + dy).toInt().coerceAtLeast(minSize)
+                    
                     layoutParams = layoutParams.apply {
                         width = newWidth
                         height = newHeight
                     }
                 } else {
+                    val dx = event.rawX - downRawX
+                    val dy = event.rawY - downRawY
                     val parent = parent as? View
                     if (parent != null) {
                         translationX = (startTranslationX + dx).coerceIn(-left.toFloat(), (parent.width - left - width).toFloat())
@@ -159,6 +185,7 @@ class DraggableTextBox @JvmOverloads constructor(
             }
             MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                 isResizing = false
+                isRotating = false
                 performClick()
                 return true
             }
@@ -166,21 +193,39 @@ class DraggableTextBox @JvmOverloads constructor(
         return true
     }
 
+    private fun calculateAngle(rawX: Float, rawY: Float): Float {
+        val location = IntArray(2)
+        getLocationOnScreen(location)
+        val centerX = location[0] + width / 2f
+        val centerY = location[1] + height / 2f
+        return Math.toDegrees(kotlin.math.atan2((rawY - centerY).toDouble(), (rawX - centerX).toDouble())).toFloat()
+    }
+
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         if (isHandleVisible) {
             val radius = handlePaint.textSize * 0.6f
+            val rotateRadius = radius * 0.7f // 30% smaller
+            
             val rectRight = width.toFloat() - radius
             val rectBottom = height.toFloat() - radius
+            val rectTop = radius
 
-            // Draw border rectangle slightly inset to allow handle "outside"
-            canvas.drawRect(0f, 0f, rectRight, rectBottom, borderPaint)
+            // Draw border rectangle
+            canvas.drawRect(0f, rectTop, rectRight, rectBottom, borderPaint)
 
-            // Draw handle background circle at bottom-right
+            // Draw resize handle (bottom-right)
             canvas.drawCircle(rectRight, rectBottom, radius, handleBgPaint)
-
-            // Draw "+" text inside circle
             canvas.drawText("+", rectRight, rectBottom + (handlePaint.textSize / 3f), handlePaint)
+
+            // Draw rotation handle (top-right) - 30% smaller
+            canvas.drawCircle(rectRight, rectTop, rotateRadius, rotateBgPaint)
+            
+            // Adjust text size for "R" to fit the smaller circle
+            val originalTextSize = handlePaint.textSize
+            handlePaint.textSize = originalTextSize * 0.7f
+            canvas.drawText("R", rectRight, rectTop + (handlePaint.textSize / 3f), handlePaint)
+            handlePaint.textSize = originalTextSize // Restore for next frame
         }
     }
 

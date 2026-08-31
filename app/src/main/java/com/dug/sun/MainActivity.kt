@@ -35,7 +35,8 @@ import com.dug.sun.api.RetrofitClient
 import com.dug.sun.api.getErrorMessage
 import com.google.android.material.navigation.NavigationView
 import kotlinx.coroutines.launch
-
+import android.graphics.Typeface
+import android.util.Log
 class MainActivity : AppCompatActivity() {
 
     private lateinit var ivImage: ImageView
@@ -98,7 +99,15 @@ class MainActivity : AppCompatActivity() {
         ivImage = findViewById(R.id.ivImage)
         overlayContainer = findViewById(R.id.overlayContainer)
         etText = findViewById(R.id.etText)
+        etText = findViewById(R.id.etText)
 
+        val meterTypeface = try {
+            Typeface.createFromAsset(assets, "fonts/ds_digi.ttf")
+        } catch (e: Exception) {
+            Log.e("FontLoad", "Failed to load meter font", e)
+            Typeface.create(Typeface.MONOSPACE, Typeface.NORMAL)
+        }
+        etText.typeface = meterTypeface
         setupPinchToZoom()
 
         ivImage.post { centerImage() }

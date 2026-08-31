@@ -22,7 +22,7 @@ class SelectMeterActivity : AppCompatActivity() {
         rvMeters.layoutManager = GridLayoutManager(this, 2)
 
         val meterList = mutableListOf<MeterAdapter.MeterItem>()
-        for (i in 1..19) {
+        for (i in 1..25) {
             val name = "m$i"
             val resId = resources.getIdentifier(name, "drawable", packageName)
             if (resId != 0) {

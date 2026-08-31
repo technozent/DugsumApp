@@ -63,7 +63,7 @@ class DraggableTextBoxNew @JvmOverloads constructor(
 
                 Typeface.createFromAsset(
                     context.assets,
-                    "fonts/digital-7.ttf"
+                    "fonts/desg7_classic_regular.ttf"
                 )
 
             } catch (e: Exception) {
